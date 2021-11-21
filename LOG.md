@@ -9,6 +9,8 @@
 - data pass from one component to another
 
 # LOG
-20-Nov-2021 0.12 org: Structure
-20-Nov-2021 0.11 add: data, includes, layouts, posts
-20-Nov-2021 0.10 init project 
+21-Nov-2021 0.14 wip: scss minima anlamaya calisiyorum
+21-Nov-2021 0.13 lrn: scss paket incelemesi includlar  
+20-Nov-2021 0.12 org: Structure  
+20-Nov-2021 0.11 add: data, includes, layouts, posts  
+20-Nov-2021 0.10 init project   

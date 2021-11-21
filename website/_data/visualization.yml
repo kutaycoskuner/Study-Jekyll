@@ -1,0 +1,12 @@
+- name: Home
+  data1: 1
+  data2: 2
+- name: Work
+  data1: 3
+  data2: 4
+- name: School
+  data1: 5
+  data2: 6
+- name: Test
+  data1: 7
+  data2: 8

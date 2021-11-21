@@ -3,15 +3,19 @@
   <head>
     <meta charset="utf-8">
     <title>{{ page.title }}</title>
-    <link rel="stylesheet" href="/assets/styles/styles.css">
+    <!-- todo insert google analytics -->
+    <link rel="stylesheet" href="/styles/styles.css">
   </head>
   <body>
     <!-- ==== Accessibility -->
     <!-- ==== Navigation -->
-    {% include navigation.html %}
+    {% include header.html %}
+    {% include custom-head.html %}
+    <!-- {% include navigation.html %} -->
     <!-- ==== Content -->
     {{ content }}
     <!-- ==== Footer -->
+    <!-- disc {% include footer.html %} -->
     <!-- ==== Blackout -->
     <!-- == Slider -->
   </body>
