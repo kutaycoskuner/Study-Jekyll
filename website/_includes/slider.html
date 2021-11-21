@@ -1,0 +1,594 @@
+<!--// ==== Blackout | Slider Overlay-->
+<div v-if="isSliderAdded === true" class="slider-container active activate-display" id="slider-container">
+  <!--// :: Void [Disable Overlay] -->
+  <div class="slider-void">
+    <div class="void-top" @click="closeOverlay()">
+      <div>⨯</div>
+    </div>
+    <!--// :: Bottom Void -->
+    <div class="void-bottom">
+      <div class="slider-switches">
+        <div class="slider-switch-wrapper">
+          <!-- <div v-for="(work, index) in visualization" class="slider-switch" @click="moveManual(index)"></div> -->
+        </div>
+      </div>
+    </div>
+    <!--// :: Slider -->
+    <div class="slider" id="slider" ref="slider">
+
+      <div v-for="work in visualization" v-bind:key="work" class="slide active">
+      {% for item in site.data.visualization %}
+        <img v-for="(item, index) in work.links" v-bind:key="index" src="{{ item.link }}" alt=""/>
+        <div class="slider-sub-wrapper">
+          <div v-for="(item, index) in work.links" v-bind:key="index" v-show="isSubSlide" class="slider-sub-switch"
+            @click="moveManual(index)"></div>
+        </div>
+      {% endfor %}
+      </div>
+      <!--// :: Slider Mover -->
+      <div class="slide-move">
+        <div class="move-left" @click="moveLeft()"></div>
+        <div class="move-right" @click="moveRight()"></div>
+      </div>
+      <div class="work-move">
+        <div class="work-move-left" @click="moveLeftWork()">
+          <span>prev</span>
+        </div>
+        <div class="work-move-right" @click="moveRightWork()">
+          <span>next</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <div>
+      {% for item in site.data.visualization %}
+      <img src="{{ item.link }}" alt="asdf" width="300px"></img>
+      {% endfor %}
+    </div> -->
+
+<script>
+  import json from "../../database/visualization.json";
+  import luthier from "../../database/luthier.json";
+  import archipelago from "../../database/archipelago.json";
+  export default {
+    setup() { },
+    data() {
+      return {
+        visualization: luthier.data,
+        dLuthier: luthier.data,
+        dVisualization: json.data,
+        dArchipelago: archipelago.data,
+        state: "",
+        isSliderAdded: true,
+        isSubSlide: false,
+        isOverlayOpen: false,
+        imgState: -1,
+        activeSlide: 0,
+        subSlide: 0,
+      };
+    },
+    // mounted(){
+    //   this.$root.$on('imageIndex', (index) => {
+    //     console.log(index)
+    //   })
+    // },
+    methods: {
+      toggleOverlay(num) {
+        if (!this.isOverlayOpen) return;
+        this.imgState = -1;
+        // if(!this.isStateChanged) return;
+        let slides = this.$refs["slider"].getElementsByClassName("slide");
+        // :: no-scroll void overlay toggle
+        document.body.classList.toggle("no-scroll");
+        document.getElementById("slider-container").classList.toggle("active");
+        document
+          .getElementById("slider-container")
+          .classList.toggle("activate-display");
+        // :: yeni aktif slide i sec
+        this.activeSlide = num;
+        // ::
+        this.visualization[this.activeSlide].links.length >= 2
+          ? (this.isSubSlide = true)
+          : (this.isSubSlide = false);
+        // :: yeni slide i aktive et
+        this.$refs["slider"]
+          .getElementsByClassName("slide")
+        [num].classList.add("active");
+        this.visualization[this.activeSlide].links.length >= 2
+          ? (this.isSubSlide = true)
+          : (this.isSubSlide = false);
+        if (this.visualization[this.activeSlide].links.length >= 2) {
+          slides[this.activeSlide]
+            .getElementsByTagName("div")[1]
+            .classList.add("active");
+        }
+        slides[this.activeSlide]
+          .getElementsByTagName("img")[0]
+          .classList.remove("hidden");
+      },
+      closeOverlay() {
+        this.isOverlayOpen = false;
+        let slides = this.$refs["slider"].getElementsByClassName("slide");
+        slides[this.activeSlide]
+          .getElementsByTagName("div")
+        [this.subSlide + 1].classList.remove("active");
+        slides[this.activeSlide]
+          .getElementsByTagName("img")
+        [this.subSlide].classList.add("hidden");
+        this.subSlide = 0;
+        // :: aktif slide var ise kaldir
+        this.$refs["slider"]
+          .getElementsByClassName("slide")
+        [this.activeSlide].classList.remove("active");
+        // document.getElementById("slider-switches").getElementsByTagName('div')[this.activeSlide].classList.remove('active');
+        // :: no-scroll void overlay toggle
+        document.body.classList.toggle("no-scroll");
+        document.getElementById("slider-container").classList.toggle("active");
+        document
+          .getElementById("slider-container")
+          .classList.toggle("activate-display");
+      },
+      moveLeft() {
+        this.activeSlide = Number(this.activeSlide);
+        let slides = this.$refs["slider"].getElementsByClassName("slide");
+        let current = slides[this.activeSlide].getElementsByTagName("img");
+        current[this.subSlide].classList.add("hidden");
+        slides[this.activeSlide]
+          .getElementsByTagName("div")
+        [this.subSlide + 1].classList.remove("active");
+        slides[this.activeSlide]
+          .getElementsByTagName("div")[1]
+          .classList.remove("active");
+        // :: sub side var mi yok mu kontrol et
+        if (current.length >= 2 && this.subSlide >= 1) {
+          slides[this.activeSlide]
+            .getElementsByClassName("slider-sub-switch")
+          [this.subSlide].classList.remove("active");
+          this.subSlide = this.subSlide - 1;
+          if (this.subSlide >= 0) {
+            // :: subslide icinde sonraki varsa
+            current[this.subSlide].classList.remove("hidden");
+            slides[this.activeSlide]
+              .getElementsByClassName("slider-sub-switch")
+            [this.subSlide].classList.add("active");
+          } else {
+            // :: subslide icinde sonraki yoksa
+            // :: yeni slayt
+            this.activeSlide == 0
+              ? (this.activeSlide = slides.length - 1)
+              : (this.activeSlide = this.activeSlide - 1);
+            this.visualization[this.activeSlide].links.length >= 2
+              ? (this.isSubSlide = true)
+              : (this.isSubSlide = false);
+            this.subSlide = this.visualization[this.activeSlide].links.length - 1;
+            current[this.subSlide].classList.remove("hidden");
+            slides[this.activeSlide].classList.remove("active");
+            if (this.visualization[this.activeSlide].links.length >= 2) {
+              slides[this.activeSlide]
+                .getElementsByTagName("div")[1]
+                .classList.add("active");
+            }
+            slides[this.activeSlide].classList.add("active");
+          }
+        } else {
+          slides[this.activeSlide].classList.remove("active");
+          // :: slide numarasini belirle
+          this.activeSlide == 0
+            ? (this.activeSlide = slides.length - 1)
+            : (this.activeSlide = this.activeSlide - 1);
+          // :: switchleri goster/gosterme boolu
+          this.visualization[this.activeSlide].links.length >= 2
+            ? (this.isSubSlide = true)
+            : (this.isSubSlide = false);
+          this.subSlide = this.visualization[this.activeSlide].links.length - 1;
+          if (this.visualization[this.activeSlide].links.length >= 2) {
+            slides[this.activeSlide]
+              .getElementsByTagName("div")
+            [this.subSlide + 1].classList.add("active");
+            slides[this.activeSlide]
+              .getElementsByTagName("img")[0]
+              .classList.add("hidden");
+            slides[this.activeSlide]
+              .getElementsByTagName("img")
+            [this.subSlide].classList.remove("hidden");
+          }
+          // :: yeni division ekle
+          slides[this.activeSlide]
+            .getElementsByTagName("img")
+          [this.subSlide].classList.remove("hidden");
+          slides[this.activeSlide].classList.add("active");
+        }
+      },
+      moveRight() {
+        // :: Vue string olarak algiliyor o yuzden number cast
+        this.activeSlide = Number(this.activeSlide);
+        let slides = this.$refs["slider"].getElementsByClassName("slide");
+        let current = slides[this.activeSlide].getElementsByTagName("img");
+        slides[this.activeSlide]
+          .getElementsByTagName("div")
+        [this.subSlide + 1].classList.remove("active");
+        current[this.subSlide].classList.add("hidden");
+        // slides[this.activeSlide].getElementsByTagName('div')[1].classList.remove('active');
+        // :: sub side var mi yok mu kontrol et
+        if (current.length >= 2 && this.subSlide + 1 <= current.length) {
+          current[this.subSlide].classList.add("hidden");
+          slides[this.activeSlide]
+            .getElementsByClassName("slider-sub-switch")
+          [this.subSlide].classList.remove("active");
+          this.subSlide = this.subSlide + 1;
+          if (this.subSlide + 1 <= current.length) {
+            // :: sonraki
+            current[this.subSlide].classList.remove("hidden");
+            slides[this.activeSlide]
+              .getElementsByClassName("slider-sub-switch")
+            [this.subSlide].classList.add("active");
+          } else {
+            this.subSlide = 0;
+            current[this.subSlide].classList.remove("hidden");
+            slides[this.activeSlide].classList.remove("active");
+            // :: yeni slayt
+            this.activeSlide == slides.length - 1
+              ? (this.activeSlide = 0)
+              : (this.activeSlide = this.activeSlide + 1);
+            this.visualization[this.activeSlide].links.length >= 2
+              ? (this.isSubSlide = true)
+              : (this.isSubSlide = false);
+            if (this.visualization[this.activeSlide].links.length >= 2) {
+              slides[this.activeSlide]
+                .getElementsByTagName("div")[1]
+                .classList.add("active");
+            }
+            slides[this.activeSlide].classList.add("active");
+            slides[this.activeSlide]
+              .getElementsByTagName("img")[0]
+              .classList.remove("hidden");
+          }
+        } else {
+          slides[this.activeSlide].classList.remove("active");
+          // :: slide numarasini belirle
+          this.activeSlide == slides.length - 1
+            ? (this.activeSlide = 0)
+            : (this.activeSlide = this.activeSlide + 1);
+          // :: switchleri goster/gosterme boolu
+          this.visualization[this.activeSlide].links.length >= 2
+            ? (this.isSubSlide = true)
+            : (this.isSubSlide = false);
+          if (this.visualization[this.activeSlide].links.length >= 2) {
+            slides[this.activeSlide]
+              .getElementsByTagName("div")[1]
+              .classList.add("active");
+          }
+          // :: yeni division ekle
+          slides[this.activeSlide]
+            .getElementsByTagName("img")[0]
+            .classList.remove("hidden");
+          slides[this.activeSlide].classList.add("active");
+        }
+      },
+      moveLeftWork() {
+        // :: Vue string olarak algiliyor o yuzden number cast
+        this.activeSlide = Number(this.activeSlide);
+        let slides = document
+          .getElementById("slider")
+          .getElementsByClassName("slide");
+        let current = slides[this.activeSlide].getElementsByTagName("img");
+        slides[this.activeSlide]
+          .getElementsByTagName("div")
+        [this.subSlide + 1].classList.remove("active");
+        current[this.subSlide].classList.add("hidden");
+        slides[this.activeSlide]
+          .getElementsByTagName("div")[1]
+          .classList.remove("active");
+        // :: sub side var mi yok mu kontrol et
+        slides[this.activeSlide].classList.remove("active");
+        // :: slide numarasini belirle
+        this.activeSlide == 0
+          ? (this.activeSlide = slides.length - 1)
+          : (this.activeSlide = this.activeSlide - 1);
+        // :: switchleri goster/gosterme boolu
+        this.visualization[this.activeSlide].links.length >= 2
+          ? (this.isSubSlide = true)
+          : (this.isSubSlide = false);
+        this.subSlide = this.visualization[this.activeSlide].links.length - 1;
+        if (this.visualization[this.activeSlide].links.length >= 2) {
+          slides[this.activeSlide]
+            .getElementsByTagName("div")
+          [this.subSlide + 1].classList.add("active");
+          slides[this.activeSlide]
+            .getElementsByTagName("img")[0]
+            .classList.add("hidden");
+          slides[this.activeSlide]
+            .getElementsByTagName("img")
+          [this.subSlide].classList.remove("hidden");
+        }
+        // :: yeni division ekle
+        slides[this.activeSlide]
+          .getElementsByTagName("img")
+        [this.subSlide].classList.remove("hidden");
+        slides[this.activeSlide].classList.add("active");
+      },
+      moveRightWork() {
+        // :: Vue string olarak algiliyor o yuzden number cast
+        this.activeSlide = Number(this.activeSlide);
+        let slides = document
+          .getElementById("slider")
+          .getElementsByClassName("slide");
+        let current = slides[this.activeSlide].getElementsByTagName("img");
+        slides[this.activeSlide]
+          .getElementsByTagName("div")
+        [this.subSlide + 1].classList.remove("active");
+        if (this.visualization[this.activeSlide].links.length >= 2) {
+          current[this.subSlide].classList.add("hidden");
+        }
+        // :: sub side var mi yok mu kontrol et
+        slides[this.activeSlide].classList.remove("active");
+        // :: slide numarasini belirle
+        this.activeSlide == slides.length - 1
+          ? (this.activeSlide = 0)
+          : (this.activeSlide = this.activeSlide + 1);
+        // :: switchleri goster/gosterme boolu
+        this.visualization[this.activeSlide].links.length >= 2
+          ? (this.isSubSlide = true)
+          : (this.isSubSlide = false);
+        this.subSlide = 0;
+        // :: yeni division ekle
+        slides[this.activeSlide].classList.add("active");
+        slides[this.activeSlide]
+          .getElementsByTagName("img")
+        [this.subSlide].classList.remove("hidden");
+        slides[this.activeSlide]
+          .getElementsByTagName("div")[1]
+          .classList.add("active");
+      },
+    },
+    watch: {
+      "$route.params.imgCat": function (val) {
+        if (val === "luthierhouse") this.visualization = this.dLuthier;
+        if (val === "visualization") this.visualization = this.dVisualization;
+        if (val === "archipelago") this.visualization = this.dArchipelago;
+        this.state = val;
+        // this.$forceUpdate();
+        // this.visualization = newVal;
+        // toogleOverlay()
+        // console.log(this.visualization.visualization[0]);
+      },
+      "$route.params.imgIndex": function (newVal) {
+        if (newVal != -1) this.imgState = newVal;
+        this.$router.push({ params: { imgIndex: -1 } });
+      },
+      imgState: function (newVal) {
+        if (
+          this.imgState != -1 &&
+          this.imgState != undefined &&
+          !this.isOverlayOpen
+        ) {
+          this.isOverlayOpen = true;
+          this.toggleOverlay(newVal);
+        }
+      },
+    },
+  };
+</script>
+
+<style scoped>
+  /* == Blackout [Slider Overlay] */
+
+  /* == Slider Container */
+  .slider-container {
+    background-color: #060606;
+    width: 100%;
+    height: 0;
+    display: none;
+    position: fixed;
+    overflow: hidden;
+    opacity: 0;
+    z-index: 20;
+    transition: opacity 0.5s ease;
+  }
+
+  /* == Slider Void */
+  .slider-void {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: repeat(2, 1fr);
+  }
+
+  .slider-void .void-top {
+    opacity: 0.4;
+    user-select: none;
+    transition: opacity 0.3s;
+  }
+
+  .slider-void .void-top:hover {
+    opacity: 1;
+  }
+
+  .slider-void .void-top div {
+    color: #ccc;
+    position: fixed;
+    top: 3%;
+    right: 2%;
+    cursor: pointer;
+  }
+
+  .slider-void .void-bottom {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* == Slider Arrows */
+  .slide-move {
+    color: #474747;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    user-select: none;
+  }
+
+  .work-move {
+    color: #474747;
+    width: 100%;
+    height: 74%;
+    position: fixed;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    user-select: none;
+  }
+
+  .work-move span {
+    cursor: pointer;
+  }
+
+  .work-move-left {
+    padding-top: 1em;
+    padding-right: 0.5em;
+    text-align: right;
+  }
+
+  .work-move-right {
+    padding-top: 1em;
+    padding-left: 0.5em;
+    text-align: left;
+  }
+
+  .work-move-left:hover {
+    color: #fdfdfd;
+    transition: color 0.3s;
+  }
+
+  .work-move-right:hover {
+    color: #fdfdfd;
+    transition: color 0.3s;
+  }
+
+  /* == Slider */
+  .slider {
+    width: 100%;
+    height: 74%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .slide {
+    width: auto;
+    height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  .slide img {
+    margin: 0;
+    padding: 0;
+    width: auto;
+    height: 100%;
+    display: block;
+    margin: auto;
+    object-fit: cover;
+  }
+
+  /* == Slider Radio Switches */
+  .slider-switches {
+    width: 20%;
+    height: 5%;
+    display: flex;
+    position: relative;
+    left: 50%;
+    bottom: -68%;
+    transform: translateX(-50%);
+    z-index: 15;
+  }
+
+  .slider-switch-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .slider-switch {
+    background-color: #474747;
+    width: 6px;
+    height: 6px;
+    margin: 1px;
+    border-radius: 50%;
+  }
+
+  .slider-switch.active {
+    background-color: #e0e0e0;
+  }
+
+  .slider-void .void-bottom .slider-switch:hover {
+    background-color: #a0a0a0;
+    cursor: pointer;
+  }
+
+  .slider-sub-wrapper {
+    width: 20%;
+    height: 6px;
+    display: flex;
+    position: fixed;
+    top: 96%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .slider-sub-switch {
+    background-color: #000;
+    opacity: 0.4;
+    width: 6px;
+    height: 6px;
+    margin: 1px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+  }
+
+  .slider-sub-switch.active {
+    background-color: #fff;
+    opacity: 0.8;
+  }
+
+  .slider-sub-switch:hover {
+    background-color: #a0a0a0;
+    cursor: pointer;
+  }
+
+  /* ==== Enhancers [bunun gorunmesi icin en altta olmasi gerekiyor] */
+  .activate-display {
+    display: block;
+  }
+
+  .active {
+    height: 100%;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+
+  .hidden {
+    width: 0 !important;
+    opacity: 0 !important;
+    transition: opacity 0.5s ease !important;
+  }
+</style>
